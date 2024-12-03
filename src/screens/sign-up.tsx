@@ -1,13 +1,17 @@
-import { Center, Heading, Image, Text, VStack, ScrollView } from "@gluestack-ui/themed";
+import { Center, Heading, Image, Text, VStack, ScrollView, useToast } from "@gluestack-ui/themed";
 import { useNavigation } from "@react-navigation/native";
 import { useForm, Controller } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup';
+import { api } from "@services/api";
+import axios from 'axios'
 
 import BackgroundImg from "@assets/background.png"
 import Logo from '@assets/logo.svg'
 import { Input } from "@components/input";
 import { Button } from "@components/button";
+import { AppError } from "@utils/app-error";
+import { ToastMessage } from "@components/toast-message";
 
 
 
@@ -26,17 +30,56 @@ const signUpSchema = yup.object({
 })
 
 export function SignUp() {
+    const navigation = useNavigation()
+    const toast = useToast()
+
     const { control, handleSubmit, formState: { errors } } = useForm<formDataProps>({
         resolver: yupResolver<formDataProps>(signUpSchema)        
     })
 
-    const navigation = useNavigation()
 
     function handleGoBack() {
         navigation.goBack()
     }
 
-    function handleSignUp({name, email, password, password_confirm}: formDataProps) {
+    async function handleSignUp({name, email, password, password_confirm}: formDataProps) {
+        try {
+            const response = await api.post('/users', {
+                name, email, password
+            })
+            const data = response.data
+        } catch (error) {
+            const isAppError = error instanceof AppError
+            const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde'
+
+            return toast.show({
+                placement: 'top',
+                render: ({ id }) => (
+                    <ToastMessage
+                        id={id}
+                        title="Cadastro de usuário"
+                        description={title}
+                        action="error"
+                        onClose={() => toast.close(id)}
+                    />
+                )
+            })
+        }
+
+
+        // const response = await fetch(`http://192.168.15.8:3333/users`, {
+        //     method: 'POST', 
+        //     headers: {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({
+        //         name, 
+        //         email,
+        //         password
+        //     })            
+        // })
+        // const data = response.json()
         
     }
 
