@@ -9,6 +9,8 @@ import { useAuth } from '@hooks/use-auth'
 export function Routes() {
     const { user } = useAuth()
 
+    console.log('user', user)
+
     const theme = DefaultTheme
     theme.colors.background = gluestackUIConfig.tokens.colors.gray700
 
