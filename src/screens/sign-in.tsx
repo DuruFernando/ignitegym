@@ -1,4 +1,4 @@
-import { Center, Heading, Image, Text, VStack, ScrollView } from "@gluestack-ui/themed";
+import { Center, Heading, Image, Text, VStack, ScrollView, useToast } from "@gluestack-ui/themed";
 import BackgroundImg from "@assets/background.png"
 import Logo from '@assets/logo.svg'
 import { Input } from "@components/input";
@@ -7,6 +7,9 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 import { useAuth } from "@hooks/use-auth";
 import { Controller, useForm } from "react-hook-form";
+import { AppError } from "@utils/app-error";
+import { ToastMessage } from "@components/toast-message";
+import { useState } from "react";
 
 type FormData = {
     email: string, 
@@ -14,8 +17,10 @@ type FormData = {
 }
 
 export function SignIn() {
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const { signIn } = useAuth()
     const navigation = useNavigation<AuthNavigatorRoutesProps>()
+    const toast = useToast()
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormData>()
 
@@ -24,7 +29,28 @@ export function SignIn() {
     }
 
     async function handleSignIn ({email, password}: FormData) {
-        await signIn(email, password)
+        try {
+            setIsLoading(true)
+            await signIn(email, password)
+        } catch (error) {
+            setIsLoading(false)
+            const isAppError = error instanceof AppError
+
+            const title = isAppError ? error.message : 'Não foi possível entrar. Tente novamente mais tarde'
+
+            return toast.show({
+                placement: 'top',
+                render: ({ id }) => (
+                    <ToastMessage
+                        id={id}
+                        title="LOGIN"
+                        description={title}
+                        action="error"
+                        onClose={() => toast.close(id)}
+                    />
+                )
+            })
+        }
     }
 
     return (
@@ -89,7 +115,7 @@ export function SignIn() {
                             )}
                         />
 
-                        <Button title="Acessar" onPress={handleSubmit(handleSignIn)}/>
+                        <Button title="Acessar" isLoading={isLoading} onPress={handleSubmit(handleSignIn)}/>
                     </Center>
 
                     <Center 
