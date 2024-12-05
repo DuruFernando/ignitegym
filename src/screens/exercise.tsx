@@ -19,6 +19,7 @@ type RouteParamsProps = {
 }
 
 export function Exercise() {
+    const [sendingRegister, setSendingRegister] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [exercise, setExercise] = useState<ExerciseDTO>({} as ExerciseDTO)
 
@@ -56,6 +57,47 @@ export function Exercise() {
             })
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    async function handleExerciseHistoryRegister() {
+        try {
+            setSendingRegister(true)
+            await api.post(`history`, { exercise_id: exerciseId })
+
+            toast.show({
+                placement: 'top',
+                render: ({ id }) => (
+                    <ToastMessage
+                        id={id}
+                        title="EXERCÍCIO"
+                        description='Parabéns! Exercício registrado no seu histórico'
+                        action="success"
+                        onClose={() => toast.close(id)}
+                    />
+                )
+            })
+
+            navigation.navigate('history')
+        } catch (error) {
+            const isAppError = error instanceof AppError
+
+            const title = isAppError ? error.message : 'Não foi possível registrar o exercício'
+
+            return toast.show({
+                placement: 'top',
+                render: ({ id }) => (
+                    <ToastMessage
+                        id={id}
+                        title="EXERCÍCIO"
+                        description={title}
+                        action="error"
+                        onClose={() => toast.close(id)}
+                    />
+                )
+            })
+        } finally {
+            setSendingRegister(false)
         }
     }
 
@@ -151,6 +193,8 @@ export function Exercise() {
                                 
                                 <Button
                                     title="Marcar como realizado"
+                                    isLoading={sendingRegister}
+                                    onPress={handleExerciseHistoryRegister}
                                 />
                             </Box>
                         </VStack>
