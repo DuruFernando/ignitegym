@@ -14,7 +14,7 @@ import { useAuth } from "@hooks/use-auth";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { AppError } from "@utils/app-error";
 import { api } from "@services/api";
-
+import defaultUserPhotoImg from '@assets/userPhotoDefault.png'
 
 type FormDataProps = {
     name: string
@@ -52,7 +52,6 @@ const profileSchema = yup.object({
 })
 export function Profile() {
     const [updating, setUpdating] = useState(false)
-    const [userPhoto, setUserPhoto] = useState("https://github.com/DuruFernando.png")
     const toast = useToast()
     const { user, updateUserProfile } = useAuth()
 
@@ -132,9 +131,6 @@ export function Profile() {
                         />
                     )
                 })
-                console.log(photoFile)
-
-                // setUserPhoto(asset.uri)
             }
         } catch (err){
             console.log(err)
@@ -196,9 +192,10 @@ export function Profile() {
             >
                 <Center mt="$6" px="$10">
                     <UserPhoto 
-                        source={{
-                            uri: userPhoto
-                        }}
+                        source={user.avatar 
+                            ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}`}
+                            : defaultUserPhotoImg
+                        }
                         alt="Imagem do usuário"
                         size="xl"
                     />
