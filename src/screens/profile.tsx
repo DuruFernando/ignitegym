@@ -99,7 +99,42 @@ export function Profile() {
                     })
                 }
 
-                setUserPhoto(asset.uri)
+                const fileExtension = asset.uri.split('.').pop();
+                const photoFile = {
+                    name: `${user.name}.${fileExtension}`.toLocaleLowerCase(),
+                    uri: asset.uri,
+                    type: `${asset.type}/${fileExtension}`
+                } as any
+
+                const userPhotoUploadForm = new FormData()
+
+                userPhotoUploadForm.append('avatar', photoFile)
+
+                const avatartUpdatedResponse = await api.patch('/users/avatar', userPhotoUploadForm, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                })
+
+                const userUpdated = user
+                userUpdated.avatar = avatartUpdatedResponse.data.avatar
+                updateUserProfile(userUpdated)
+
+                toast.show({
+                    placement: 'top',
+                    render: ({ id }) => (
+                        <ToastMessage
+                            id={id}
+                            title="FOTO"
+                            description='Foto atualizada'
+                            action="success"
+                            onClose={() => toast.close(id)}
+                        />
+                    )
+                })
+                console.log(photoFile)
+
+                // setUserPhoto(asset.uri)
             }
         } catch (err){
             console.log(err)
